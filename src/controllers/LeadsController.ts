@@ -2,17 +2,48 @@ import { Handler } from "express";
 import { prisma } from "../database";
 import {
   CreateLeadRequestSchema,
+  GetLeadsRequestSchema,
   UpdateLeadRequestSchema,
 } from "./schemas/LeadsRequestSchema";
-import { waitForDebugger } from "inspector";
 import { HttpError } from "../errors/HttpError";
+import { Prisma } from "@prisma/client";
 
 export class LeadsController {
   // GET /api/leads
   index: Handler = async (req, res, next) => {
     try {
-      const leads = await prisma.lead.findMany();
-      res.status(200).json(leads);
+      const {
+        name,
+        status,
+        page = 1,
+        pageSize = 10,
+        order = "asc",
+        sortBy = "name",
+      } = GetLeadsRequestSchema.parse(req.query);
+
+      const where: Prisma.LeadWhereInput = {};
+
+      if (name) where.name = { contains: name, mode: "insensitive" };
+      if (status) where.status = status;
+
+      const leads = await prisma.lead.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { [sortBy]: order },
+      });
+
+      const total = await prisma.lead.count({ where });
+
+      res.status(200).json({
+        data: leads,
+        meta: {
+          page,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      });
     } catch (error) {
       next(error);
     }
