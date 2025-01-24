@@ -4,7 +4,7 @@ export interface LeadWhereParams {
   name?: {
     like?: string;
     equals?: string;
-    mode?: "default" | "insensitve";
+    mode?: "default" | "insensitive";
   };
   status?: LeadStatus;
 }
