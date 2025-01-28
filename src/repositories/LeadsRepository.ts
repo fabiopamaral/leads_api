@@ -7,6 +7,7 @@ export interface LeadWhereParams {
     mode?: "default" | "insensitive";
   };
   status?: LeadStatus;
+  groupId?: number;
 }
 
 export interface FindLeadParams {
@@ -15,6 +16,7 @@ export interface FindLeadParams {
   order?: "asc" | "desc";
   limit?: number;
   offset?: number;
+  include?: { groups: boolean };
 }
 
 export interface CreateLeadAttributes {

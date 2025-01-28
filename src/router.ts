@@ -5,12 +5,18 @@ import { GroupsController } from "./controllers/GroupsController";
 import { PrismaGroupsRepository } from "./repositories/prisma/PrismaGroupsRepository";
 import { CampaignsController } from "./controllers/CampaignsController";
 import { PrismaCampaignsRepository } from "./repositories/prisma/PrismaCampaignsRepository";
+import { GroupLeadsController } from "./controllers/GroupLeadsController";
 
 export const router = Router();
 
 const leadsRepository = new PrismaLeadsRepository();
 const groupsRepository = new PrismaGroupsRepository();
 const campaignsRepository = new PrismaCampaignsRepository();
+
+const groupLeadsController = new GroupLeadsController(
+  leadsRepository,
+  groupsRepository
+);
 
 const leadsController = new LeadsController(leadsRepository);
 const groupsController = new GroupsController(groupsRepository);
@@ -27,6 +33,13 @@ router.post("/groups", groupsController.create);
 router.get("/groups/:id", groupsController.show);
 router.put("/groups/:id", groupsController.update);
 router.delete("/groups/:id", groupsController.delete);
+
+router.get("/groups/:groupId/leads", groupLeadsController.getLeads);
+router.post("/groups/:groupId/leads/", groupLeadsController.addLead);
+router.delete(
+  "/groups/:groupId/leads/:leadId",
+  groupLeadsController.removeLead
+);
 
 router.get("/campaigns", campaignsController.index);
 router.post("/campaigns", campaignsController.create);
