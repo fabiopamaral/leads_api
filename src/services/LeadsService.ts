@@ -21,7 +21,7 @@ export class LeadsService {
     const { name, status, page = 1, pageSize = 10, sortBy, order } = params;
 
     const limit = Number(pageSize);
-    const offset = (pageSize - 1) * page;
+    const offset = (page - 1) * limit;
 
     const where: LeadWhereParams = {};
 
