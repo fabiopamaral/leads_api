@@ -1,4 +1,4 @@
-import { Lead } from "@prisma/client";
+import { Lead, Prisma } from "@prisma/client";
 import {
   CreateLeadAttributes,
   FindLeadParams,
@@ -9,21 +9,32 @@ import { prisma } from "../../database";
 
 export class PrismaLeadsRepository implements LeadsRepository {
   async findAll(params: FindLeadParams): Promise<Lead[]> {
-    return prisma.lead.findMany({
-      where: {
-        name: {
-          contains: params.where?.name?.like,
-          equals: params.where?.name?.equals,
-          mode: params.where?.name?.mode,
-        },
-        status: params.where?.status,
-        groups: { some: { id: params.where?.groupId } },
+    let where: Prisma.LeadWhereInput = {
+      name: {
+        contains: params.where?.name?.like,
+        equals: params.where?.name?.equals,
+        mode: params.where?.name?.mode,
       },
+      status: params.where?.status,
+    };
 
+    if (params.where?.groupId) {
+      where.groups = { some: { id: params.where.groupId } };
+    }
+
+    if (params.where?.campaignId) {
+      where.campaigns = { some: { campaignId: params.where.campaignId } };
+    }
+
+    return prisma.lead.findMany({
+      where,
       orderBy: { [params.sortBy ?? "name"]: params.order },
       skip: params.offset,
       take: params.limit,
-      include: { groups: params.include?.groups },
+      include: {
+        groups: params.include?.groups,
+        campaigns: params.include?.campaigns,
+      },
     });
   }
 
@@ -35,17 +46,24 @@ export class PrismaLeadsRepository implements LeadsRepository {
   }
 
   async count(where: LeadWhereParams): Promise<number> {
-    return prisma.lead.count({
-      where: {
-        name: {
-          contains: where?.name?.like,
-          equals: where?.name?.equals,
-          mode: where?.name?.mode,
-        },
-        status: where?.status,
-        groups: { some: { id: where.groupId } },
+    let prismaWhere: Prisma.LeadWhereInput = {
+      name: {
+        contains: where?.name?.like,
+        equals: where?.name?.equals,
+        mode: where?.name?.mode,
       },
-    });
+      status: where?.status,
+    };
+
+    if (where?.groupId) {
+      prismaWhere.groups = { some: { id: where.groupId } };
+    }
+
+    if (where?.campaignId) {
+      prismaWhere.campaigns = { some: { campaignId: where.campaignId } };
+    }
+
+    return prisma.lead.count({ where: prismaWhere });
   }
 
   async create(attributes: CreateLeadAttributes): Promise<Lead> {

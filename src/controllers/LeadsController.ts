@@ -25,7 +25,7 @@ export class LeadsController {
       } = GetLeadsRequestSchema.parse(req.query);
 
       const limit = pageSize;
-      const offset = page;
+      const offset = (page - 1) * pageSize;
 
       const where: LeadWhereParams = {};
 
@@ -45,7 +45,7 @@ export class LeadsController {
       res.status(200).json({
         data: leads,
         meta: {
-          page: offset,
+          page: Number(page),
           pageSize: limit,
           total,
           totalPages: Math.ceil(total / limit),

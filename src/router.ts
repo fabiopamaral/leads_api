@@ -18,7 +18,10 @@ const groupLeadsController = new GroupLeadsController(
   leadsRepository,
   groupsRepository
 );
-const campaignLeadsController = new CampaignLeadsController();
+const campaignLeadsController = new CampaignLeadsController(
+  campaignsRepository,
+  leadsRepository
+);
 
 const leadsController = new LeadsController(leadsRepository);
 const groupsController = new GroupsController(groupsRepository);
