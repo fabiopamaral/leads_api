@@ -1,10 +1,11 @@
-import { LeadStatus } from "@prisma/client";
 import {
   CreateLeadAttributes,
   LeadsRepository,
+  LeadStatus,
   LeadWhereParams,
 } from "../repositories/LeadsRepository";
 import { HttpError } from "../errors/HttpError";
+import { LeadCampaignStatus } from "../repositories/CampaignsRepository";
 
 interface GetLeadsWithPaginationParams {
   page?: number;
@@ -15,8 +16,15 @@ interface GetLeadsWithPaginationParams {
   order?: "asc" | "desc";
 }
 
+interface GetCampaignLeadsParams {
+  campaignId: number;
+  name?: string;
+  status?: LeadCampaignStatus;
+}
+
 export class LeadsService {
   constructor(private readonly leadsRepository: LeadsRepository) {}
+
   async getAllLeadsPaginated(params: GetLeadsWithPaginationParams) {
     const { name, status, page = 1, pageSize = 10, sortBy, order } = params;
 
@@ -48,6 +56,8 @@ export class LeadsService {
       },
     };
   }
+
+  async getCampaignLeads(params: GetCampaignLeadsParams) {}
 
   async createLead(params: CreateLeadAttributes) {
     if (!params.status) params.status = "New";

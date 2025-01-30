@@ -3,8 +3,6 @@ import {
   CreateCampaignRequestSechema,
   UpdateCampaignRequestSechema,
 } from "./schemas/CampaignsRequestSchema";
-import { CampaignsRepository } from "../repositories/CampaignsRepository";
-import { HttpError } from "../errors/HttpError";
 import { CampaignsService } from "../services/CampaignsService";
 
 export class CampaignsController {
@@ -58,10 +56,7 @@ export class CampaignsController {
   delete: Handler = async (req, res, next) => {
     try {
       const id = +req.params.id;
-
       const deletedCampaign = await this.campaignsService.deleteCampaign(id);
-      if (!deletedCampaign) throw new HttpError(404, "campanha não encontrada");
-
       res.json({ message: "Campanha excluída com sucesso!", deletedCampaign });
     } catch (error) {
       next(error);
