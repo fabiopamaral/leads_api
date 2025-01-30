@@ -5,13 +5,14 @@ import {
 } from "./schemas/CampaignsRequestSchema";
 import { CampaignsRepository } from "../repositories/CampaignsRepository";
 import { HttpError } from "../errors/HttpError";
+import { CampaignsService } from "../services/CampaignsService";
 
 export class CampaignsController {
-  constructor(readonly campaignsRepository: CampaignsRepository) {}
+  constructor(readonly campaignsService: CampaignsService) {}
 
   index: Handler = async (req, res, next) => {
     try {
-      const campaigns = await this.campaignsRepository.findAll();
+      const campaigns = await this.campaignsService.getAllCampaigns();
       res.json(campaigns);
     } catch (error) {
       next(error);
@@ -21,8 +22,7 @@ export class CampaignsController {
   create: Handler = async (req, res, next) => {
     try {
       const body = CreateCampaignRequestSechema.parse(req.body);
-      const newCampaign = await this.campaignsRepository.create(body);
-
+      const newCampaign = await this.campaignsService.createCamapign(body);
       res.status(201).json(newCampaign);
     } catch (error) {
       next(error);
@@ -31,9 +31,8 @@ export class CampaignsController {
 
   show: Handler = async (req, res, next) => {
     try {
-      const campaign = await this.campaignsRepository.findById(+req.params.id);
-      if (!campaign) throw new HttpError(404, "Campanha não encontrada");
-
+      const id = +req.params.id;
+      const campaign = await this.campaignsService.findCampaignById(id);
       res.json(campaign);
     } catch (error) {
       next(error);
@@ -45,11 +44,10 @@ export class CampaignsController {
       const id = +req.params.id;
       const body = UpdateCampaignRequestSechema.parse(req.body);
 
-      const updatedCampaign = await this.campaignsRepository.updateById(
+      const updatedCampaign = await this.campaignsService.updateCampaign(
         id,
         body
       );
-      if (!updatedCampaign) throw new HttpError(404, "campanha não encontrada");
 
       res.json(updatedCampaign);
     } catch (error) {
@@ -61,7 +59,7 @@ export class CampaignsController {
     try {
       const id = +req.params.id;
 
-      const deletedCampaign = await this.campaignsRepository.deleteById(id);
+      const deletedCampaign = await this.campaignsService.deleteCampaign(id);
       if (!deletedCampaign) throw new HttpError(404, "campanha não encontrada");
 
       res.json({ message: "Campanha excluída com sucesso!", deletedCampaign });

@@ -40,7 +40,7 @@ export class GroupsController {
     try {
       const id = +req.params.id;
       const body = UpdateGroupsRequestSchema.parse(req.body);
-      const updatedLead = this.groupsService.updateGroup(id, body);
+      const updatedLead = await this.groupsService.updateGroup(id, body);
       res.json(updatedLead);
     } catch (error) {
       next(error);
