@@ -1,31 +1,13 @@
 import { Router } from "express";
-import { LeadsController } from "./controllers/LeadsController";
-import { PrismaLeadsRepository } from "./repositories/prisma/PrismaLeadsRepository";
-import { GroupsController } from "./controllers/GroupsController";
-import { PrismaGroupsRepository } from "./repositories/prisma/PrismaGroupsRepository";
-import { CampaignsController } from "./controllers/CampaignsController";
-import { PrismaCampaignsRepository } from "./repositories/prisma/PrismaCampaignsRepository";
-import { GroupLeadsController } from "./controllers/GroupLeadsController";
-import { CampaignLeadsController } from "./controllers/CampaignLeadsController";
+import {
+  campaignLeadsController,
+  campaignsController,
+  groupLeadsController,
+  groupsController,
+  leadsController,
+} from "./container";
 
 export const router = Router();
-
-const leadsRepository = new PrismaLeadsRepository();
-const groupsRepository = new PrismaGroupsRepository();
-const campaignsRepository = new PrismaCampaignsRepository();
-
-const groupLeadsController = new GroupLeadsController(
-  leadsRepository,
-  groupsRepository
-);
-const campaignLeadsController = new CampaignLeadsController(
-  campaignsRepository,
-  leadsRepository
-);
-
-const leadsController = new LeadsController(leadsRepository);
-const groupsController = new GroupsController(groupsRepository);
-const campaignsController = new CampaignsController(campaignsRepository);
 
 router.get("/leads", leadsController.index);
 router.get("/leads/:id", leadsController.show);
@@ -62,7 +44,3 @@ router.delete(
   "/campaigns/:campaignId/leads/:leadId",
   campaignLeadsController.removeLead
 );
-
-router.get("/teste", (req, res) => {
-  res.json({ message: "TUDO OK" });
-});
