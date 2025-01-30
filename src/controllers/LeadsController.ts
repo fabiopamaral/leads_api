@@ -88,6 +88,24 @@ export class LeadsController {
       const lead = await this.leadsRepository.findById(id);
       if (!lead) throw new HttpError(404, "Lead não encontrado");
 
+      if (lead.status !== "New" && body.status !== "Contacted") {
+        throw new HttpError(
+          400,
+          "um novo lead deve ser contatado antes de ter o status atualizado para outros valores"
+        );
+      }
+
+      if (body.status === "Archived") {
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - lead.updatedAt.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays < 180)
+          throw new HttpError(
+            400,
+            "um lead só pode ser arquivado após 6 meses de inativadade!"
+          );
+      }
+
       const updatedLead = await this.leadsRepository.updateById(id, body);
 
       res.json(updatedLead);
