@@ -4,16 +4,13 @@ import {
   GetCampaignLeadsRequestSchema,
   UpdateLeadStatusRequestSchema,
 } from "./schemas/CampaignsRequestSchema";
-import { CampaignsRepository } from "../repositories/CampaignsRepository";
-import {
-  LeadsRepository,
-  LeadWhereParams,
-} from "../repositories/LeadsRepository";
+import { LeadsService } from "../services/LeadsService";
+import { CampaignsService } from "../services/CampaignsService";
 
 export class CampaignLeadsController {
   constructor(
-    private readonly campaignsRepository: CampaignsRepository,
-    private readonly leadsRepository: LeadsRepository
+    private readonly campaignsService: CampaignsService,
+    private readonly leadsService: LeadsService
   ) {}
 
   // GET /campaigns/:campaignId/leads
@@ -30,35 +27,17 @@ export class CampaignLeadsController {
         order = "asc",
       } = query;
 
-      const where: LeadWhereParams = {
+      const leads = await this.leadsService.getCampaignLeads({
         campaignId,
-        campaignStatus: status,
-      };
-
-      if (name) where.name = { like: name, mode: "insensitive" };
-
-      const limit = pageSize;
-      const offset = (page - 1) * pageSize;
-
-      const leads = await this.leadsRepository.findAll({
-        where,
+        name,
+        status,
+        page,
+        pageSize,
         sortBy,
         order,
-        limit,
-        offset,
       });
 
-      const total = await this.leadsRepository.count(where);
-
-      res.json({
-        leads,
-        meta: {
-          page,
-          pageSize,
-          total,
-          totalPages: Math.ceil(total / pageSize),
-        },
-      });
+      res.json(leads);
     } catch (error) {
       next();
     }
@@ -71,7 +50,12 @@ export class CampaignLeadsController {
       const { leadId, status = "New" } = AddLeadCampaignRequestSchema.parse(
         req.body
       );
-      await this.campaignsRepository.addLead({ campaignId, leadId, status });
+
+      await this.campaignsService.addLeadToCampaign({
+        campaignId,
+        leadId,
+        status,
+      });
 
       res.status(201).end();
     } catch (error) {
@@ -86,7 +70,7 @@ export class CampaignLeadsController {
       const leadId = +req.params.leadId;
       const { status } = UpdateLeadStatusRequestSchema.parse(req.body);
       const updatedLeadCampaign =
-        await this.campaignsRepository.updateLeadStatus({
+        await this.campaignsService.updateLeadStatusFromCampaign({
           campaignId,
           leadId,
           status,
@@ -102,7 +86,7 @@ export class CampaignLeadsController {
     try {
       const campaignId = +req.params.campaignId;
       const leadId = +req.params.leadId;
-      const removeLead = await this.campaignsRepository.removeLead(
+      const removeLead = await this.campaignsService.removeLeadFromCampaign(
         campaignId,
         leadId
       );

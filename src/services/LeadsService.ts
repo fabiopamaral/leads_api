@@ -20,6 +20,10 @@ interface GetCampaignLeadsParams {
   campaignId: number;
   name?: string;
   status?: LeadCampaignStatus;
+  page?: number;
+  pageSize?: number;
+  sortBy?: "name" | "createdAt" | "status";
+  order?: "asc" | "desc";
 }
 
 export class LeadsService {
@@ -56,8 +60,6 @@ export class LeadsService {
       },
     };
   }
-
-  async getCampaignLeads(params: GetCampaignLeadsParams) {}
 
   async createLead(params: CreateLeadAttributes) {
     if (!params.status) params.status = "New";
@@ -109,5 +111,44 @@ export class LeadsService {
     const deletedLead = await this.leadsRepository.deleteById(leadId);
 
     return deletedLead;
+  }
+
+  async getCampaignLeads(params: GetCampaignLeadsParams) {
+    const {
+      campaignId,
+      name,
+      status,
+      page = 1,
+      pageSize = 10,
+      order,
+      sortBy,
+    } = params;
+
+    const where: LeadWhereParams = { campaignId, campaignStatus: status };
+
+    if (name) where.name = { like: name, mode: "insensitive" };
+
+    const limit = pageSize;
+    const offset = (page - 1) * pageSize;
+
+    const leads = await this.leadsRepository.findAll({
+      where,
+      sortBy,
+      order,
+      limit,
+      offset,
+    });
+
+    const total = await this.leadsRepository.count(where);
+
+    return {
+      leads,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }

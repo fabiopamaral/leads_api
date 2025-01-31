@@ -23,8 +23,8 @@ export const groupLeadsController = new GroupLeadsController(
   groupsRepository
 );
 export const campaignLeadsController = new CampaignLeadsController(
-  campaignsRepository,
-  leadsRepository
+  campaignsService,
+  leadsService
 );
 
 export const leadsController = new LeadsController(leadsService);
