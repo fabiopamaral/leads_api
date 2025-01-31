@@ -6,11 +6,13 @@ import {
   LeadsRepository,
   LeadWhereParams,
 } from "../repositories/LeadsRepository";
+import { LeadsService } from "../services/LeadsService";
+import { GroupsService } from "../services/GroupsService";
 
 export class GroupLeadsController {
   constructor(
-    private readonly leadsRepository: LeadsRepository,
-    private readonly groupsRepository: GroupsRepository
+    private readonly leadsService: LeadsService,
+    private readonly groupsService: GroupsService
   ) {}
   // GET /groups/:groupId/leads
   getLeads: Handler = async (req, res, next) => {
@@ -26,34 +28,17 @@ export class GroupLeadsController {
         order = "asc",
       } = query;
 
-      const limit = Number(pageSize);
-      const offset = Number(page);
-
-      const where: LeadWhereParams = { groupId };
-
-      if (name) where.name = { like: name, mode: "insensitive" };
-      if (status) where.status = status;
-
-      const leads = await this.leadsRepository.findAll({
-        where,
-        sortBy,
+      const leads = await this.leadsService.getGroupLeads({
+        groupId,
+        name,
+        status,
         order,
-        limit,
-        offset,
-        include: { groups: true },
+        sortBy,
+        page,
+        pageSize,
       });
 
-      const total = await this.leadsRepository.count(where);
-
-      res.json({
-        leads,
-        meta: {
-          page: offset,
-          pageSize: limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      });
+      res.json(leads);
     } catch (error) {
       next(error);
     }
@@ -65,7 +50,10 @@ export class GroupLeadsController {
       const groupId = +req.params.groupId;
       const { leadId } = AddLeadRequestSchema.parse(req.body);
 
-      const updatedGroup = await this.groupsRepository.addLead(groupId, leadId);
+      const updatedGroup = await this.groupsService.addLeadToGroup(
+        groupId,
+        leadId
+      );
       res.status(201).json(updatedGroup);
     } catch (error) {
       next(error);
@@ -77,7 +65,7 @@ export class GroupLeadsController {
     try {
       const groupId = +req.params.groupId;
       const leadId = +req.params.leadId;
-      const updatedGroup = await this.groupsRepository.removeLead(
+      const updatedGroup = await this.groupsService.removeLeadFromGroup(
         groupId,
         leadId
       );

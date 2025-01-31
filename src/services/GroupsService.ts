@@ -39,4 +39,12 @@ export class GroupsService {
     const deletedGroup = await this.groupsRepository.deleteById(groupId);
     return deletedGroup;
   }
+
+  async addLeadToGroup(groupId: number, leadId: number) {
+    return await this.groupsRepository.addLead(groupId, leadId);
+  }
+
+  async removeLeadFromGroup(groupId: number, leadId: number) {
+    return await this.groupsRepository.removeLead(groupId, leadId);
+  }
 }

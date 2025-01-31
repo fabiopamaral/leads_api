@@ -19,8 +19,8 @@ export const groupsService = new GroupsService(groupsRepository);
 export const campaignsService = new CampaignsService(campaignsRepository);
 
 export const groupLeadsController = new GroupLeadsController(
-  leadsRepository,
-  groupsRepository
+  leadsService,
+  groupsService
 );
 export const campaignLeadsController = new CampaignLeadsController(
   campaignsService,

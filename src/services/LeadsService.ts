@@ -26,6 +26,16 @@ interface GetCampaignLeadsParams {
   order?: "asc" | "desc";
 }
 
+interface GetGroupLeadsParams {
+  groupId: number;
+  name?: string;
+  status?: LeadStatus;
+  page?: number;
+  pageSize?: number;
+  sortBy?: "name" | "createdAt" | "status";
+  order?: "asc" | "desc";
+}
+
 export class LeadsService {
   constructor(private readonly leadsRepository: LeadsRepository) {}
 
@@ -146,6 +156,47 @@ export class LeadsService {
       meta: {
         page,
         pageSize,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getGroupLeads(params: GetGroupLeadsParams) {
+    const {
+      groupId,
+      name,
+      status,
+      order,
+      sortBy,
+      page = 1,
+      pageSize = 10,
+    } = params;
+
+    const where: LeadWhereParams = { groupId };
+
+    const limit = pageSize;
+    const offset = (page - 1) * limit;
+
+    if (name) where.name = { like: name, mode: "insensitive" };
+    if (status) where.status = status;
+
+    const leads = await this.leadsRepository.findAll({
+      where,
+      limit,
+      offset,
+      order,
+      sortBy,
+      include: { groups: true },
+    });
+
+    const total = await this.leadsRepository.count(where);
+
+    return {
+      leads,
+      meta: {
+        page,
+        limit,
         total,
         totalPages: Math.ceil(total / limit),
       },
