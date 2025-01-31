@@ -6,7 +6,7 @@ import {
 import { CampaignsService } from "../services/CampaignsService";
 
 export class CampaignsController {
-  constructor(readonly campaignsService: CampaignsService) {}
+  constructor(private readonly campaignsService: CampaignsService) {}
 
   index: Handler = async (req, res, next) => {
     try {

@@ -6,7 +6,7 @@ import {
 import { GroupsService } from "../services/GroupsService";
 
 export class GroupsController {
-  constructor(readonly groupsService: GroupsService) {}
+  constructor(private readonly groupsService: GroupsService) {}
 
   index: Handler = async (req, res, next) => {
     try {

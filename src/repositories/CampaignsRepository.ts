@@ -1,4 +1,4 @@
-import { Campaign, LeadCampaign } from "@prisma/client";
+import { Campaign } from "@prisma/client";
 
 export type LeadCampaignStatus =
   | "New"
